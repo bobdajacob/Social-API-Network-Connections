@@ -72,7 +72,7 @@ export const deleteThought = async (req: Request, res: Response): Promise<void> 
     }
 
     const user = await User.findOneAndUpdate(
-      { applications: req.params.thoughtId },
+      { thought: req.params.thoughtId },
       { $pull: {thoughts: req.params.thoughtId }},
       {new: true }
     );
