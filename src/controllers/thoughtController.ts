@@ -48,7 +48,7 @@ export const getSingleThoughts = async (req: Request, res: Response) => {
 export const updateThought = async (req: Request, res: Response): Promise<void> => {
   try {
     const thought = await Thought.findOneAndUpdate(
-      { _id: req.params.thoughtsId },
+      { _id: req.params.thoughtId }, //does thoughtId need to match something??? I had thougtsId
       { $set: req.body },
       { runValidators: true, new: true }
     );
@@ -56,35 +56,25 @@ export const updateThought = async (req: Request, res: Response): Promise<void> 
       res.status(404).json({ message: 'No thought with this id!' });
     }
     res.json(thought);
-    return;
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
-    return;
   }
 }
 
 export const deleteThought = async (req: Request, res: Response): Promise<void> => {
   try {
-    const thought = await Thought.findOneAndDelete({ _id: req.params.thoughtsId });
+    const thought = await Thought.findOneAndDelete({ _id: req.params.thoughtId });
     if (!thought) {
       res.status(404).json({ message: 'No thought with this id' });
     }
-
-    const user = await User.findOneAndUpdate(
-      { thought: req.params.thoughtId },
-      { $pull: {thoughts: req.params.thoughtId }},
-      {new: true }
-    );
-    if (!user) {
+    if (!thought) {
       res.status(404).json({
         message: 'Thought created but no user with this id!',
       });
     }
     res.json({ message: 'Thought successfully deleted!' });
-    return;
   } catch (error) {
     res.status(500).json(error);
-    return;
   }
 }
