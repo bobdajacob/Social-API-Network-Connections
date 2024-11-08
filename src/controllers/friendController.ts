@@ -1,4 +1,4 @@
-import User from '../models/User';
+import User from '../models/User.js';
 import { Response, Request } from 'express';
 
 export const addFriend = async (req: Request, res: Response): Promise<void> => {

@@ -1,6 +1,6 @@
-import Thought from '../models/Thought';
+import Thought from '../models/Thought.js';
 import { Request, Response } from 'express';
-import User from '../models/User';
+import User from '../models/User.js';
 
 export const getThoughts = async (_req: Request, res: Response) => {
   try {
@@ -45,7 +45,7 @@ export const getSingleThoughts = async (req: Request, res: Response) => {
   }
 }
 
-export const updateThought = async (req: Request, res: Response) => {
+export const updateThought = async (req: Request, res: Response): Promise<void> => {
   try {
     const thought = await Thought.findOneAndUpdate(
       { _id: req.params.thoughtsId },
@@ -53,7 +53,7 @@ export const updateThought = async (req: Request, res: Response) => {
       { runValidators: true, new: true }
     );
     if (!thought) {
-      return res.status(404).json({ message: 'No thought with this id!' });
+      res.status(404).json({ message: 'No thought with this id!' });
     }
     res.json(thought);
     return;
@@ -64,11 +64,11 @@ export const updateThought = async (req: Request, res: Response) => {
   }
 }
 
-export const deleteThought = async (req: Request, res: Response) => {
+export const deleteThought = async (req: Request, res: Response): Promise<void> => {
   try {
     const thought = await Thought.findOneAndDelete({ _id: req.params.thoughtsId });
     if (!thought) {
-      return res.status(404).json({ message: 'No thought with this id' });
+      res.status(404).json({ message: 'No thought with this id' });
     }
 
     const user = await User.findOneAndUpdate(
@@ -77,7 +77,7 @@ export const deleteThought = async (req: Request, res: Response) => {
       {new: true }
     );
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         message: 'Thought created but no user with this id!',
       });
     }
