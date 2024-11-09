@@ -14,13 +14,14 @@ export const getSingleUser = async (req: Request, res: Response) => {
   try {
     const user = await User.findOne({ _id: req.params.userId })
       .select('-__v')
-      .populate('thoughts') // Populating thoughts associated with the user
-      .populate('friends'); // Populating friends associated with the user
+      .populate('thoughts')
+      .populate('friends'); 
 
     if (!user) {
     res.status(404).json({ message: 'User not found' });
+    } else {
+      res.json(user);
     }
-    res.json(user); // Send the user data as a response (no return needed)
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving user data', error });
   }
@@ -71,3 +72,69 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
     return;
   }
 }
+
+export const addFriend = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId, friendId } = req.params;
+
+    if (userId === friendId) {
+      res.status(400).json({message: ' You cannot add yourself as a friend' });
+    }
+    const user = await User.findByIdAndUpdate(userId, {$addToSet: {friends: friendId }}, {new: true, runValidators: true}).populate('friends');
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+    }
+    const friend = await User.findByIdAndUpdate(friendId, {$addToSet: { friends: userId}}, {new: true, runValidators: true }).populate('friends');
+    if (!friend) {
+      res.status(404).json({ message: 'Friend not found.' });
+    }
+    res.status(200).json({ message: 'Friend added successfully!', user, friend});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error});
+  }
+};
+
+export const removeFriend = async (req: Request, res: Response) => {
+  try {
+    const { userId, friendId } = req.params;
+    const user = await User.findByIdAndUpdate(userId, {$pull: {friends: friendId }}, {new:true}).populate('friends');
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+    }
+    const friend = await User.findByIdAndUpdate(friendId, {$pull: {friends: userId}}, {new: true }).populate('friends');
+    if (!friend) {
+      res.status(404).json({ message: 'Friend not found' });
+    } 
+    res.status(200).json({message: 'Friend removed successfully!'});
+  } catch (error) {
+    console.error(error);
+      res.status(500).json({ message: 'Server error', error});
+  }
+};
+
+
+// export const removeFriend = async (req: Request, res: Response): Promise<void> => {
+//   try {
+//     const { userId, friendId } = req.params;
+
+//     // Remove friendId from user's friends array
+//     const user = await User.findByIdAndUpdate(userId, { $pull: { friends: friendId } }, { new: true }).populate('friends');
+//     if (!user) {
+//       res.status(404).json({ message: 'User not found' });
+//     }
+
+//     // Remove userId from friend's friends array
+//     const friend = await User.findByIdAndUpdate(friendId, { $pull: { friends: userId } }, { new: true }).populate('friends');
+//     if (!friend) {
+//       res.status(404).json({ message: 'Friend not found' });
+//     }
+
+//     // If both updates are successful, send a success message
+//     res.status(200).json({ message: 'Friend removed successfully!', user, friend });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error', error });
+//   }
+// };
